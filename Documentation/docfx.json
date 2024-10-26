@@ -1,0 +1,89 @@
+{
+    "metadata": [
+        {
+            "src": [
+                {
+                    "src": "..",
+                    "files": [
+                        "Assets/**/*.cs"
+                    ],
+                    "exclude": [
+                        "**/bin/**",
+                        "**/obj/**",
+                        "**/Packages/**",
+                        "**/Library/**",
+                        "**/Tests/**",
+                        "**/UnitTests/**",
+                        "**/Editor/**"
+                    ]
+                }
+            ],
+            "dest": "api",
+            "filter": "filterConfig.yml",
+            "globalNamespaceId": "Global"
+        }
+    ],
+    "build": {
+        "content": [
+            {
+                "files": [
+                    "api/**.yml",
+                    "api/index.md",
+                    "toc.yml",
+                    "*.md",
+                    "ui/*.md"
+                ]
+            }
+        ],
+        "resource": [
+            {
+                "files": [
+                    "resources/**/*"
+                ]
+            }
+        ],
+        "dest": "_site",
+        "template": [
+            "default",
+            "modern",
+            "templates/unity"
+        ],
+        "globalMetadata": {
+            "_appName": "DocfxUnityExample Documentation",
+            "_appTitle": "Documentation",
+            "_enableSearch": true,
+            "apiPdfUrl": "_pdf/Documentation_api.pdf"
+        },
+        "sitemap": {
+            "baseUrl": "https://stahovl.github.io/DocfxUnityExample/"
+        }
+    },
+    "pdf": {
+            "content": [
+                {
+                    "files": [
+                        "api/**.yml",
+                        "api/index.md",
+                        "toc.yml",
+                        "*.md"
+                    ],
+                    "exclude": [
+                        "**/bin/**",
+                        "**/obj/**"
+                    ]
+                }
+            ],
+            "resource": [
+                {
+                    "files": [
+                        "resources/**/*"
+                    ]
+                }
+            ],
+            "template": [
+                "pdf.default"
+            ],
+            "dest": "_site/_pdf",
+            "name": "Documentation"
+        }
+}

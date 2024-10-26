@@ -1,0 +1,46 @@
+### YamlMime:ManagedReference
+items:
+- uid: Global.Click
+  commentId: T:Global.Click
+  id: Click
+  parent: Global
+  children: []
+  langs:
+  - csharp
+  - vb
+  name: Click
+  nameWithType: Click
+  fullName: Click
+  type: Class
+  source:
+    id: Click
+    path: ''
+    startLine: 10
+  assemblies:
+  - cs.temp.dll
+  namespace: Global
+  summary: "\nMain and only class for the docfx example\n"
+  remarks: "\nThis class works in conjunction with Main.uxml file.\nFor more information about the UI structure see <a href=\"~/ui/index.md\">UI Documentation</a>.\n"
+  example: []
+  syntax:
+    content: 'public class Click : MonoBehaviour'
+    content.vb: >-
+      Public Class Click
+
+          Inherits MonoBehaviour
+  inheritance:
+  - System.Object
+  modifiers.csharp:
+  - public
+  - class
+  modifiers.vb:
+  - Public
+  - Class
+references:
+- uid: Global
+  name: Global
+  nameWithType: Global
+  fullName: Global
+  nameWithType.vb: ''
+  fullName.vb: ''
+  name.vb: ''
