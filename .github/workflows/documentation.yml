@@ -12,10 +12,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '6.0.x'
 
@@ -43,57 +43,53 @@ jobs:
         shell: cmd
 
       - name: Create PDF directory
-        run: New-Item -ItemType Directory -Force -Path Documentation\_site\_pdf
+        run: New-Item -ItemType Directory -Force -Path Documentation/_pdf
         shell: powershell
 
       - name: Start Python Server
         run: |
           cd Documentation/_site
-          $serverProcess = Start-Process -FilePath python -ArgumentList "-m", "http.server", "8000" -PassThru
+          Start-Process python -ArgumentList "-m", "http.server", "8000" -NoNewWindow
           Start-Sleep -Seconds 10
         shell: powershell
 
       - name: Generate PDFs
         run: |
           cd Documentation/_site
-    
           wkhtmltopdf --enable-local-file-access `
-                    --print-media-type `
-                    --javascript-delay 5000 `
-                    --no-stop-slow-scripts `
-                    --debug-javascript `
-                    --load-error-handling ignore `
-                    --load-media-error-handling ignore `
-                    http://localhost:8000/api/index.html "_pdf/Documentation_api.pdf"
-    
+                     --print-media-type `
+                     --javascript-delay 5000 `
+                     --no-stop-slow-scripts `
+                     --debug-javascript `
+                     --load-error-handling ignore `
+                     --load-media-error-handling ignore `
+                     http://localhost:8000/api/index.html "../_pdf/Documentation_api.pdf"
+          
           wkhtmltopdf --enable-local-file-access `
-                    --print-media-type `
-                    --javascript-delay 5000 `
-                    --no-stop-slow-scripts `
-                    --debug-javascript `
-                    --load-error-handling ignore `
-                    --load-media-error-handling ignore `
-                    http://localhost:8000/index.html "_pdf/Documentation.pdf"
-    
-          Stop-Process -Id $serverProcess.Id
+                     --print-media-type `
+                     --javascript-delay 5000 `
+                     --no-stop-slow-scripts `
+                     --debug-javascript `
+                     --load-error-handling ignore `
+                     --load-media-error-handling ignore `
+                     http://localhost:8000/index.html "../_pdf/Documentation.pdf"
         shell: powershell
-
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
         shell: cmd
 
       - name: Upload site artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: _site
           path: Documentation/_site
 
       - name: Upload PDF artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: documentation_pdfs
-          path: Documentation/_site/_pdf
+          path: Documentation/_pdf
 
   deploy:
     needs: build
@@ -102,25 +98,25 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Download site artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: _site
-          path: _site
+          path: .
 
       - name: Download PDF artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: documentation_pdfs
-          path: _site/_pdf
+          path: _pdf
 
       - name: Create .nojekyll file
-        run: touch _site/.nojekyll
+        run: touch .nojekyll
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _site
+          publish_dir: .
