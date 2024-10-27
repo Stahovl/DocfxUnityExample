@@ -27,14 +27,10 @@ jobs:
 
       - name: Debug Project Structure
         run: |
-          echo "Current directory:"
-          pwd
-          echo "Content of current directory:"
-          dir
-          echo "Content of Assets folder:"
-          dir /s /b Assets\*.cs
-          echo "Content of Documentation folder:"
-          dir Documentation
+          echo "Current directory structure:"
+          dir /s /b
+          echo "Looking for C# files:"
+          dir /s /b *.cs
         shell: cmd
         continue-on-error: true
 
@@ -45,27 +41,20 @@ jobs:
       - name: Generate Metadata
         run: |
           cd Documentation
-          if exist obj rmdir /s /q obj
-          echo "Generating metadata..."
-          docfx metadata --force --verbosity detailed
-          echo "Metadata generation complete"
-          echo "Content of api folder:"
-          dir api
-          type api\toc.yml
-          echo "Content of obj folder:"
-          dir obj
+          echo "Current directory:"
+          cd
+          echo "Content of current directory:"
+          dir
+          echo "Generating metadata with docfx.json..."
+          docfx metadata docfx.json --force
+          echo "Checking generated files:"
+          dir /s /b api
         shell: cmd
 
       - name: Build Documentation
         run: |
           cd Documentation
-          echo "Building documentation..."
-          docfx build --force --verbosity detailed
-          echo "Build complete"
-          echo "Content of _site folder:"
-          dir _site
-          echo "Content of _site/api folder:"
-          dir _site\api
+          docfx build docfx.json --force
         shell: cmd
 
       - name: Create PDF directory
@@ -76,25 +65,17 @@ jobs:
         run: |
           cd Documentation/_site
           
-          Write-Host "Checking for required files..."
+          Write-Host "Checking API documentation..."
           if (Test-Path "api/index.html") {
-              Write-Host "api/index.html exists"
-              Get-Content "api/index.html" | Select-Object -First 10
+              Write-Host "API documentation exists"
           } else {
-              Write-Host "api/index.html not found!"
+              Write-Host "Warning: api/index.html not found!"
+              Write-Host "Directory content:"
+              Get-ChildItem -Recurse | Select-Object FullName
           }
           
-          Write-Host "Starting docfx server..."
           $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 20
-          
-          try {
-              $response = Invoke-WebRequest -Uri "http://localhost:8080/api/index.html" -UseBasicParsing
-              Write-Host "Server response status code: $($response.StatusCode)"
-              Write-Host "Content length: $($response.RawContentLength)"
-          } catch {
-              Write-Host "Error accessing server: $_"
-          }
           
           Write-Host "Generating API PDF..."
           wkhtmltopdf --enable-local-file-access `
@@ -106,12 +87,6 @@ jobs:
                      --load-media-error-handling ignore `
                      --log-level debug `
                      http://localhost:8080/api/index.html "_pdf/Documentation_api.pdf"
-          
-          if (Test-Path "_pdf/Documentation_api.pdf") {
-              Write-Host "API PDF generated, size: $((Get-Item "_pdf/Documentation_api.pdf").Length) bytes"
-          } else {
-              Write-Host "API PDF generation failed!"
-          }
           
           Write-Host "Generating main documentation PDF..."
           wkhtmltopdf --enable-local-file-access `
@@ -125,6 +100,11 @@ jobs:
                      http://localhost:8080/index.html "_pdf/Documentation.pdf"
           
           Stop-Process -Id $serverProcess.Id
+          
+          Write-Host "Checking generated PDFs:"
+          Get-ChildItem _pdf | ForEach-Object {
+              Write-Host "$($_.Name): $($_.Length) bytes"
+          }
         shell: powershell
 
       - name: Create .nojekyll file
