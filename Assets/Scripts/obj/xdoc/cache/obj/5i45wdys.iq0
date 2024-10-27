@@ -1,0 +1,90 @@
+id: cs.temp.dll
+language: CSharp
+name:
+  Default: cs.temp.dll
+qualifiedName:
+  Default: cs.temp.dll
+type: Assembly
+modifiers: {}
+items:
+- id: Global
+  language: CSharp
+  name:
+    CSharp: Global
+    VB: ''
+  nameWithType:
+    CSharp: Global
+    VB: ''
+  qualifiedName:
+    CSharp: Global
+    VB: ''
+  type: Namespace
+  assemblies:
+  - cs.temp.dll
+  modifiers: {}
+  items:
+  - id: Global.Click
+    commentId: T:Global.Click
+    language: CSharp
+    name:
+      CSharp: Click
+      VB: Click
+    nameWithType:
+      CSharp: Click
+      VB: Click
+    qualifiedName:
+      CSharp: Click
+      VB: Click
+    type: Class
+    assemblies:
+    - cs.temp.dll
+    namespace: Global
+    source:
+      id: Click
+      path: ''
+      startLine: 6
+    summary: "\nMain and only class for the docfx example\n"
+    example: []
+    syntax:
+      content:
+        CSharp: 'public class Click : MonoBehaviour'
+        VB: >-
+          Public Class Click
+
+              Inherits MonoBehaviour
+    inheritance:
+    - System.Object
+    modifiers:
+      CSharp:
+      - public
+      - class
+      VB:
+      - Public
+      - Class
+    items: []
+references:
+  Global.Click:
+    name:
+      CSharp:
+      - id: Global.Click
+        name: Click
+        nameWithType: Click
+        qualifiedName: Click
+      VB:
+      - id: Global.Click
+        name: Click
+        nameWithType: Click
+        qualifiedName: Click
+    isDefinition: true
+    commentId: T:Global.Click
+  Global:
+    name:
+      CSharp:
+      - name: Global
+        nameWithType: Global
+        qualifiedName: Global
+      VB:
+      - name: ''
+        nameWithType: ''
+        qualifiedName: ''
+    isDefinition: true

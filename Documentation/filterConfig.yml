@@ -1,0 +1,20 @@
+### YamlMime:ManagedReference
+apiRules:
+    - exclude:
+        uidRegex: ^Tests
+        type: Namespace
+    - exclude:
+        uidRegex: .*Tests$
+        type: Type
+    - exclude:
+        uidRegex: .*Editor.*
+        type: Type
+    - include:
+        uidRegex: ^DocfxUnityExample
+        type: Namespace
+    - include:
+        uidRegex: ^Global
+        type: Namespace
+    - exclude:
+        uidRegex: .*
+        type: Namespace
