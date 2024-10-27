@@ -61,7 +61,7 @@ jobs:
         run: New-Item -ItemType Directory -Force -Path Documentation\_site\_pdf
         shell: powershell
 
-       - name: Generate PDFs
+      - name: Generate PDFs
         run: |
           cd Documentation/_site
           
@@ -74,7 +74,6 @@ jobs:
           }
           
           $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
-          # Увеличиваем время ожидания для полной загрузки JavaScript
           Start-Sleep -Seconds 30
           
           Write-Host "Generating API PDF..."
