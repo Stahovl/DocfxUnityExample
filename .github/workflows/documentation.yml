@@ -46,11 +46,11 @@ jobs:
         run: New-Item -ItemType Directory -Force -Path Documentation/_pdf
         shell: powershell
 
-      - name: Start Python Server
+      - name: Start DocFX Server
         run: |
           cd Documentation/_site
-          Start-Process python -ArgumentList "-m", "http.server", "8000" -NoNewWindow
-          Start-Sleep -Seconds 10
+          Start-Process -NoNewWindow -FilePath docfx -ArgumentList "serve" -PassThru > server.txt
+          Start-Sleep -Seconds 15
         shell: powershell
 
       - name: Generate PDFs
@@ -63,7 +63,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     http://localhost:8000/api/index.html "../_pdf/Documentation_api.pdf"
+                     http://localhost:8080/api/index.html "../_pdf/Documentation_api.pdf"
           
           wkhtmltopdf --enable-local-file-access `
                      --print-media-type `
@@ -72,7 +72,13 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     http://localhost:8000/index.html "../_pdf/Documentation.pdf"
+                     http://localhost:8080/index.html "../_pdf/Documentation.pdf"
+        shell: powershell
+
+      - name: Stop DocFX Server
+        run: |
+          $serverProcess = Get-Content server.txt
+          Stop-Process -Id $serverProcess -Force
         shell: powershell
 
       - name: Create .nojekyll file
