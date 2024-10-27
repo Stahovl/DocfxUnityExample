@@ -66,15 +66,17 @@ jobs:
           cd Documentation/_site
           
           Write-Host "Checking API documentation..."
-          if (Test-Path "api/index.html") {
-              Write-Host "API documentation exists"
+          if (Test-Path "api/Global.html") {
+              Write-Host "API documentation exists, using Global.html as entry point"
+              $apiEntryPoint = "api/Global.html"
           } else {
-              Write-Host "Warning: api/index.html not found!"
+              Write-Host "Warning: API documentation not found!"
               Write-Host "Directory content:"
               Get-ChildItem -Recurse | Select-Object FullName
+              exit 1
           }
           
-          $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
+           $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 20
           
           Write-Host "Generating API PDF..."
@@ -85,8 +87,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     --log-level debug `
-                     http://localhost:8080/api/index.html "_pdf/Documentation_api.pdf"
+                     http://localhost:8080/$apiEntryPoint "_pdf/Documentation_api.pdf"
           
           Write-Host "Generating main documentation PDF..."
           wkhtmltopdf --enable-local-file-access `
@@ -96,13 +97,12 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     --log-level debug `
                      http://localhost:8080/index.html "_pdf/Documentation.pdf"
           
           Stop-Process -Id $serverProcess.Id
           
           Write-Host "Checking generated PDFs:"
-          Get-ChildItem _pdf | ForEach-Object {
+          Get-ChildItem "_pdf" | ForEach-Object {
               Write-Host "$($_.Name): $($_.Length) bytes"
           }
         shell: powershell
