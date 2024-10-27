@@ -34,8 +34,8 @@ jobs:
 
       - name: Ensure PDF directory exists
         run: |
-          if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
-        shell: cmd
+          mkdir -Force Documentation\_site\_pdf
+        shell: powershell
 
       - name: Start Python Server
         run: |
@@ -53,26 +53,22 @@ jobs:
             --print-media-type ^
             --javascript-delay 1000 ^
             --log-level info ^
-            http://localhost:8000/api/index.html _pdf/Documentation_api.pdf || exit 0
+            http://localhost:8000/api/index.html _pdf/Documentation_api.pdf
           
           echo "PDF generation completed"
+          dir _pdf
         shell: cmd
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
         shell: cmd
-        
+
       - name: Upload site artifact
         uses: actions/upload-artifact@v4
         with:
           name: _site
           path: Documentation/_site
-
-      - name: Upload PDF artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: documentation_pdfs
-          path: Documentation/_site/_pdf
+          if-no-files-found: error
 
   deploy:
     needs: build
@@ -88,12 +84,6 @@ jobs:
         with:
           name: _site
           path: _site
-
-      - name: Download PDF artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: documentation_pdfs
-          path: _site/_pdf
 
       - name: Create .nojekyll file
         run: touch _site/.nojekyll
