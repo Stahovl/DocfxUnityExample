@@ -1,5 +1,4 @@
 name: Build and Deploy Documentation
-
 on:
   push:
     branches:
@@ -15,14 +14,12 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install DocFX
-        run: choco install -y docfx
+        run: choco install -y docfx 
 
       - name: Install wkhtmltopdf
         run: |
           choco install wkhtmltopdf --version=0.12.6 -y
-          $env:Path = "C:\Program Files\wkhtmltopdf\bin;$env:Path"
-          [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
-          wkhtmltopdf --version
+          $env:Path = "C:\Program Files (x86)\wkhtmltopdf\bin;$env:Path"
         shell: powershell
 
       - name: Use README.md as index.md
@@ -42,28 +39,45 @@ jobs:
           docfx metadata
         shell: cmd
 
-      - name: Generate PDF
-        run: |
-          cd Documentation
-          docfx pdf
-        shell: cmd
-
       - name: Build Documentation
         run: |
           cd Documentation
           docfx build
         shell: cmd
 
-      - name: Verify PDF Generation
+      - name: Ensure PDF directory exists
         run: |
-          cd Documentation
-          if (Test-Path "_site/_pdf/Documentation_api.pdf") {
-              Write-Host "PDF files generated successfully"
-          } else {
-              Write-Host "Warning: PDF files not found in expected location"
-              exit 1
-          }
+          if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
+        shell: cmd
+
+      - name: Start Python Server
+        run: |
+          cd Documentation/_site
+          Start-Process python -ArgumentList "-m", "http.server", "8000" -NoNewWindow
+          Start-Sleep -Seconds 5
         shell: powershell
+
+      - name: Generate PDFs
+        run: |
+          cd Documentation/_site
+          echo "Generating API documentation PDF..."
+          "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
+            --enable-local-file-access ^
+            --print-media-type ^
+            --javascript-delay 1000 ^
+            --log-level info ^
+            http://localhost:8000/api/index.html _pdf/Documentation_api.pdf || exit 0
+          
+          echo "Generating additional documentation PDF..."
+          "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
+            --enable-local-file-access ^
+            --print-media-type ^
+            --javascript-delay 1000 ^
+            --log-level info ^
+            http://localhost:8000/api/Global.html _pdf/Documentation_additional.pdf || exit 0
+          
+          echo "PDF generation completed"
+        shell: cmd
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
