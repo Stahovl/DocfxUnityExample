@@ -57,33 +57,5 @@
         "sitemap": {
             "baseUrl": "https://stahovl.github.io/DocfxUnityExample/"
         }
-    },
-    "pdf": {
-            "content": [
-                {
-                    "files": [
-                        "api/**.yml",
-                        "api/index.md",
-                        "toc.yml",
-                        "*.md"
-                    ],
-                    "exclude": [
-                        "**/bin/**",
-                        "**/obj/**"
-                    ]
-                }
-            ],
-            "resource": [
-                {
-                    "files": [
-                        "resources/**/*"
-                    ]
-                }
-            ],
-            "template": [
-                "pdf.default"
-            ],
-            "dest": "_site/_pdf",
-            "name": "Documentation"
-        }
+    }
 }
