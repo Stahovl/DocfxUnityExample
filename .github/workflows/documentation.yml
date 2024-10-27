@@ -17,6 +17,14 @@ jobs:
       - name: Install DocFX
         run: choco install -y docfx
 
+      - name: Install wkhtmltopdf
+        run: |
+          choco install wkhtmltopdf --version=0.12.6 -y
+          $env:Path = "C:\Program Files\wkhtmltopdf\bin;$env:Path"
+          [Environment]::SetEnvironmentVariable("Path", $env:Path, [EnvironmentVariableTarget]::Machine)
+          wkhtmltopdf --version
+        shell: powershell
+
       - name: Use README.md as index.md
         run: copy README.md Documentation\index.md
         shell: cmd
