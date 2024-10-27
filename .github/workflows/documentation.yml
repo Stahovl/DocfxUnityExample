@@ -25,6 +25,19 @@ jobs:
       - name: Install wkhtmltopdf
         run: choco install -y wkhtmltopdf
 
+      - name: Debug Project Structure
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Content of current directory:"
+          dir
+          echo "Content of Assets folder:"
+          dir /s /b Assets\*.cs
+          echo "Content of Documentation folder:"
+          dir Documentation
+        shell: cmd
+        continue-on-error: true
+
       - name: Use README.md as index.md
         run: copy README.md Documentation\index.md
         shell: cmd
@@ -33,13 +46,26 @@ jobs:
         run: |
           cd Documentation
           if exist obj rmdir /s /q obj
-          docfx metadata
+          echo "Generating metadata..."
+          docfx metadata --force --verbosity detailed
+          echo "Metadata generation complete"
+          echo "Content of api folder:"
+          dir api
+          type api\toc.yml
+          echo "Content of obj folder:"
+          dir obj
         shell: cmd
 
       - name: Build Documentation
         run: |
           cd Documentation
-          docfx build
+          echo "Building documentation..."
+          docfx build --force --verbosity detailed
+          echo "Build complete"
+          echo "Content of _site folder:"
+          dir _site
+          echo "Content of _site/api folder:"
+          dir _site\api
         shell: cmd
 
       - name: Create PDF directory
@@ -49,8 +75,28 @@ jobs:
       - name: Generate PDFs
         run: |
           cd Documentation/_site
+          
+          Write-Host "Checking for required files..."
+          if (Test-Path "api/index.html") {
+              Write-Host "api/index.html exists"
+              Get-Content "api/index.html" | Select-Object -First 10
+          } else {
+              Write-Host "api/index.html not found!"
+          }
+          
+          Write-Host "Starting docfx server..."
           $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 20
+          
+          try {
+              $response = Invoke-WebRequest -Uri "http://localhost:8080/api/index.html" -UseBasicParsing
+              Write-Host "Server response status code: $($response.StatusCode)"
+              Write-Host "Content length: $($response.RawContentLength)"
+          } catch {
+              Write-Host "Error accessing server: $_"
+          }
+          
+          Write-Host "Generating API PDF..."
           wkhtmltopdf --enable-local-file-access `
                      --print-media-type `
                      --javascript-delay 5000 `
@@ -58,7 +104,16 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     http://localhost:8080/api/index.html _pdf/Documentation_api.pdf
+                     --log-level debug `
+                     http://localhost:8080/api/index.html "_pdf/Documentation_api.pdf"
+          
+          if (Test-Path "_pdf/Documentation_api.pdf") {
+              Write-Host "API PDF generated, size: $((Get-Item "_pdf/Documentation_api.pdf").Length) bytes"
+          } else {
+              Write-Host "API PDF generation failed!"
+          }
+          
+          Write-Host "Generating main documentation PDF..."
           wkhtmltopdf --enable-local-file-access `
                      --print-media-type `
                      --javascript-delay 5000 `
@@ -66,7 +121,9 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     http://localhost:8080/index.html _pdf/Documentation.pdf
+                     --log-level debug `
+                     http://localhost:8080/index.html "_pdf/Documentation.pdf"
+          
           Stop-Process -Id $serverProcess.Id
         shell: powershell
 
