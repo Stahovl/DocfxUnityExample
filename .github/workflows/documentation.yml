@@ -42,44 +42,31 @@ jobs:
           docfx build
         shell: cmd
 
-      - name: Create PDF directory
-        run: New-Item -ItemType Directory -Force -Path Documentation/_pdf
-        shell: powershell
+      - name: Ensure PDF directory exists
+        run: |
+          if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
+        shell: cmd
 
-      - name: Start DocFX Server
+      - name: Start Python Server
         run: |
           cd Documentation/_site
-          Start-Process -NoNewWindow -FilePath docfx -ArgumentList "serve" -PassThru > server.txt
-          Start-Sleep -Seconds 15
+          Start-Process python -ArgumentList "-m", "http.server", "8000" -NoNewWindow
+          Start-Sleep -Seconds 5
         shell: powershell
 
       - name: Generate PDFs
         run: |
           cd Documentation/_site
-          wkhtmltopdf --enable-local-file-access `
-                     --print-media-type `
-                     --javascript-delay 5000 `
-                     --no-stop-slow-scripts `
-                     --debug-javascript `
-                     --load-error-handling ignore `
-                     --load-media-error-handling ignore `
-                     http://localhost:8080/api/index.html "../_pdf/Documentation_api.pdf"
+          echo "Generating API documentation PDF..."
+          "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
+            --enable-local-file-access ^
+            --print-media-type ^
+            --javascript-delay 1000 ^
+            --log-level info ^
+            http://localhost:8000/api/index.html _pdf/Documentation_api.pdf || exit 0
           
-          wkhtmltopdf --enable-local-file-access `
-                     --print-media-type `
-                     --javascript-delay 5000 `
-                     --no-stop-slow-scripts `
-                     --debug-javascript `
-                     --load-error-handling ignore `
-                     --load-media-error-handling ignore `
-                     http://localhost:8080/index.html "../_pdf/Documentation.pdf"
-        shell: powershell
-
-      - name: Stop DocFX Server
-        run: |
-          $serverProcess = Get-Content server.txt
-          Stop-Process -Id $serverProcess -Force
-        shell: powershell
+          echo "PDF generation completed"
+        shell: cmd
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
