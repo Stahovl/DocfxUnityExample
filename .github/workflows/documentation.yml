@@ -12,10 +12,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0.x'
 
@@ -46,11 +46,16 @@ jobs:
         run: New-Item -ItemType Directory -Force -Path Documentation\_site\_pdf
         shell: powershell
 
+      - name: Start Python Server
+        run: |
+          cd Documentation/_site
+          Start-Process python -ArgumentList "-m", "http.server", "8000" -NoNewWindow
+          Start-Sleep -Seconds 10
+        shell: powershell
+
       - name: Generate PDFs
         run: |
           cd Documentation/_site
-          $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
-          Start-Sleep -Seconds 20
           
           wkhtmltopdf --enable-local-file-access `
                      --print-media-type `
@@ -59,7 +64,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     http://localhost:8080/api/index.html "_pdf/Documentation_api.pdf"
+                     http://localhost:8000/api/index.html "_pdf/Documentation_api.pdf"
           
           wkhtmltopdf --enable-local-file-access `
                      --print-media-type `
@@ -68,9 +73,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     http://localhost:8080/index.html "_pdf/Documentation.pdf"
-          
-          Stop-Process -Id $serverProcess.Id
+                     http://localhost:8000/index.html "_pdf/Documentation.pdf"
         shell: powershell
 
       - name: Create .nojekyll file
@@ -78,13 +81,13 @@ jobs:
         shell: cmd
 
       - name: Upload site artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: _site
           path: Documentation/_site
 
       - name: Upload PDF artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: documentation_pdfs
           path: Documentation/_site/_pdf
@@ -96,16 +99,16 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download site artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: _site
           path: _site
 
       - name: Download PDF artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: documentation_pdfs
           path: _site/_pdf
