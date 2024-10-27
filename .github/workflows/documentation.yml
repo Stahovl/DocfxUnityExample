@@ -14,113 +14,53 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '6.0.x'
-
       - name: Install DocFX
         run: choco install -y docfx
-
-      - name: Install wkhtmltopdf
-        run: choco install -y wkhtmltopdf
-
-      - name: Debug Project Structure
-        run: |
-          echo "Current directory structure:"
-          dir /s /b
-          echo "Looking for C# files:"
-          dir /s /b *.cs
-        shell: cmd
-        continue-on-error: true
 
       - name: Use README.md as index.md
         run: copy README.md Documentation\index.md
         shell: cmd
 
+      - name: Clean previous builds
+        run: |
+          cd Documentation
+          Remove-Item -Path _site -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path obj -Recurse -Force -ErrorAction SilentlyContinue
+        shell: powershell
+
       - name: Generate Metadata
         run: |
           cd Documentation
-          echo "Current directory:"
-          cd
-          echo "Content of current directory:"
-          dir
-          echo "Generating metadata with docfx.json..."
-          docfx metadata docfx.json --force
-          echo "Checking generated files:"
-          dir /s /b api
+          docfx metadata
+        shell: cmd
+
+      - name: Generate PDF
+        run: |
+          cd Documentation
+          docfx pdf
         shell: cmd
 
       - name: Build Documentation
         run: |
           cd Documentation
-          docfx build docfx.json --force
+          docfx build
         shell: cmd
 
-      - name: Create PDF directory
-        run: New-Item -ItemType Directory -Force -Path Documentation\_site\_pdf
-        shell: powershell
-
-      - name: Generate PDFs
+      - name: Verify PDF Generation
         run: |
-          cd Documentation/_site
-          
-          Write-Host "Checking API documentation..."
-          if (Test-Path "api/Global.html") {
-              Write-Host "API documentation exists, using Global.html as entry point"
+          cd Documentation
+          if (Test-Path "_site/_pdf/Documentation_api.pdf") {
+              Write-Host "PDF files generated successfully"
           } else {
-              Write-Host "Warning: API documentation not found!"
+              Write-Host "Warning: PDF files not found in expected location"
               exit 1
-          }
-          
-          $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
-          Start-Sleep -Seconds 30
-          
-          Write-Host "Generating API PDF..."
-          wkhtmltopdf --enable-local-file-access `
-                     --print-media-type `
-                     --javascript-delay 10000 `
-                     --no-stop-slow-scripts `
-                     --debug-javascript `
-                     --load-error-handling ignore `
-                     --load-media-error-handling ignore `
-                     --enable-internal-links `
-                     --enable-local-file-access `
-                     --enable-javascript `
-                     --javascript-delay 10000 `
-                     --no-stop-slow-scripts `
-                     --window-status "ready" `
-                     --zoom 1.0 `
-                     "http://localhost:8080/api/Global.html" `
-                     "http://localhost:8080/api/Global.Click.html" `
-                     "_pdf/Documentation_api.pdf"
-          
-          Write-Host "Generating main documentation PDF..."
-          wkhtmltopdf --enable-local-file-access `
-                     --print-media-type `
-                     --javascript-delay 10000 `
-                     --no-stop-slow-scripts `
-                     --debug-javascript `
-                     --load-error-handling ignore `
-                     --load-media-error-handling ignore `
-                     --enable-internal-links `
-                     --enable-javascript `
-                     --window-status "ready" `
-                     --zoom 1.0 `
-                     "http://localhost:8080/index.html" "_pdf/Documentation.pdf"
-          
-          Stop-Process -Id $serverProcess.Id
-          
-          Write-Host "Checking generated PDFs:"
-          Get-ChildItem "_pdf" | ForEach-Object {
-              Write-Host "$($_.Name): $($_.Length) bytes"
           }
         shell: powershell
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
         shell: cmd
-
+        
       - name: Upload site artifact
         uses: actions/upload-artifact@v3
         with:
