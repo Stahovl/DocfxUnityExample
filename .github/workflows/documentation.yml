@@ -22,9 +22,6 @@ jobs:
       - name: Install DocFX
         run: choco install -y docfx
 
-      - name: Install wkhtmltopdf
-        run: choco install -y wkhtmltopdf
-
       - name: Use README.md as index.md
         run: copy README.md Documentation\index.md
         shell: cmd
