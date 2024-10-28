@@ -31,7 +31,7 @@ jobs:
         shell: cmd
 
       - name: DocFX Build
-        working-directory: docs
+        working-directory: _site
         run: docfx docfx.json
         continue-on-error: false
 
