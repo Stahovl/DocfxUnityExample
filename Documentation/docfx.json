@@ -49,6 +49,7 @@
             "_appName": "DocfxUnityExample Documentation",
             "_appTitle": "Documentation",
             "_enableSearch": true,
+            "pdf": true,
             "apiPdfUrl": "_pdf/Documentation_api.pdf"
         },
         "sitemap": {
