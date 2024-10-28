@@ -50,11 +50,30 @@ jobs:
           if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
         shell: cmd
 
-      - name: Start Python Server
+      - name: Start HTTP Server
         run: |
           cd Documentation/_site
-          Start-Process "python" "-m http.server 8000" -NoNewWindow -PassThru | Out-Null
-          Start-Sleep -Seconds 5
+          Add-Type -AssemblyName System.Web
+          $listener = New-Object System.Net.HttpListener
+          $listener.Prefixes.Add("http://*:8000/")
+          $listener.Start()
+          Write-Output "HTTP server running..."
+          while ($listener.IsListening) {
+            $context = $listener.GetContext()
+            $response = $context.Response
+            $path = "Documentation/_site" + $context.Request.Url.LocalPath
+            if (Test-Path $path) {
+              $content = Get-Content $path -Raw
+              $response.ContentType = "text/html"
+              [byte[]]$buffer = [System.Text.Encoding]::UTF8.GetBytes($content)
+              $response.OutputStream.Write($buffer, 0, $buffer.Length)
+              $response.Close()
+            }
+            else {
+              $response.StatusCode = 404
+              $response.Close()
+            }
+          }
         shell: powershell
 
       - name: Generate PDFs
