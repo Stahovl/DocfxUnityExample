@@ -76,8 +76,10 @@ jobs:
             --log-level info ^
             http://localhost:8000/index.html _pdf/Documentation.pdf || exit 0
 
-          echo "PDF generation completed"
+          echo "Listing _pdf directory..."
+          dir _pdf
         shell: cmd
+
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
