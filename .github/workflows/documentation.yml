@@ -47,8 +47,8 @@ jobs:
       - name: Generate PDFs
         run: |
           cd Documentation
-          wkhtmltopdf.exe --enable-local-file-access --footer-right "[page]" --header-right "[section]" --quiet "_site/api/index.html" "_site/_pdf/Documentation_api.pdf"
-          wkhtmltopdf.exe --enable-local-file-access --footer-right "[page]" --header-right "[section]" --toc --toc-header-text "Table of Contents" --quiet toc.yml,_site/api/**.html "_site/_pdf/Documentation.pdf"
+          wkhtmltopdf.exe --enable-local-file-access --footer-right "[page]" "_site/api/index.html" "_site/_pdf/Documentation_api.pdf"
+          wkhtmltopdf.exe toc --xsl-style-sheet toc.xsl "_site/toc.html" "_site/api/index.html" "_site/_pdf/Documentation.pdf"
           dir _site\_pdf
         shell: cmd
 
