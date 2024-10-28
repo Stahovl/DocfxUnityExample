@@ -36,7 +36,7 @@ jobs:
           cd Documentation
           docfx build
         shell: cmd
-        
+
       - name: Ensure PDF directory exists
         run: |
           if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: documentation_pdfs
-          path: Documentation/_site/_pdf
+          path: _site/_pdf
   deploy:
     needs: build
     runs-on: ubuntu-latest
