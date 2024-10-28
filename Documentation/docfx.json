@@ -4,9 +4,7 @@
             "src": [
                 {
                     "src": "..",
-                    "files": [
-                        "Assets/**/*.cs"
-                    ],
+                    "files": ["Assets/**/*.cs"],
                     "exclude": [
                         "**/bin/**",
                         "**/obj/**",
@@ -30,8 +28,7 @@
                     "api/**.yml",
                     "api/index.md",
                     "toc.yml",
-                    "*.md",
-                    "ui/*.md"
+                    "*.md"
                 ]
             }
         ],
@@ -57,5 +54,25 @@
         "sitemap": {
             "baseUrl": "https://stahovl.github.io/DocfxUnityExample/"
         }
+    },
+    "pdf": {
+        "content": [
+            {
+                "files": [
+                    "api/**/*.yml",
+                    "toc.yml",
+                    "*.md"
+                ]
+            }
+        ],
+        "resource": [
+            {
+                "files": [
+                    "resources/**/*"
+                ]
+            }
+        ],
+        "overwrite": [],
+        "dest": "_site/_pdf"
     }
 }
