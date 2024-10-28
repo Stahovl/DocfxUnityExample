@@ -53,7 +53,7 @@ jobs:
       - name: Start Python Server
         run: |
           cd Documentation/_site
-          python -m http.server 8000 &
+          Start-Process "python" "-m http.server 8000" -NoNewWindow -PassThru | Out-Null
           Start-Sleep -Seconds 5
         shell: powershell
 
