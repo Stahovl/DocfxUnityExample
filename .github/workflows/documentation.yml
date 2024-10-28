@@ -7,17 +7,9 @@ on:
       - main
   workflow_dispatch:
 
-permissions:
-  actions: read
-  pages: write
-  id-token: write
-
 jobs:
-  publish-docs:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+  build:
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -25,27 +17,62 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.x
+          dotnet-version: '6.0.x'
 
-      - name: Install DocFX и Wkhtmltopdf
-        run: |
-          dotnet tool update -g docfx
-          sudo apt-get install -y wkhtmltopdf
+      - name: Install DocFX
+        run: choco install -y docfx
 
-      - name: Generate Documentation
+      - name: Install wkhtmltopdf
+        run: choco install -y wkhtmltopdf
+
+      - name: Use README.md as index.md
+        run: copy README.md Documentation\index.md
+        shell: cmd
+
+      - name: Generate Metadata
         run: |
-          docfx docfx.json
+          cd Documentation
+          if exist obj rmdir /s /q obj
+          docfx metadata
+        shell: cmd
+
+      - name: Build Documentation
+        run: |
+          cd Documentation
+          docfx build
+        shell: cmd
 
       - name: Create .nojekyll file
-        run: echo "" > _site/.nojekyll
+        run: type nul > Documentation/_site/.nojekyll
+        shell: cmd
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v3
         with:
-          path: '_site'
+          name: _site
+          path: Documentation/_site
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v3
         with:
-          branch: gh-pages
+          name: _site
+          path: _site
+
+      - name: Create .nojekyll file
+        run: touch _site/.nojekyll
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _site
