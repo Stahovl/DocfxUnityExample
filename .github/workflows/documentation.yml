@@ -31,25 +31,25 @@ jobs:
           dotnet-version: '6.0.x'
 
       - run: dotnet tool update -g docfx
-      - run: docfx Documentation/docfx.json
+      - run: docfx docs/docfx.json
 
       - name: Use README.md as index.md
-        run: copy README.md Documentation\index.md
+        run: copy README.md docs\index.md
         shell: cmd
 
       - name: Create .nojekyll file
-        run: type nul > Documentation/_site/.nojekyll
+        run: type nul > docs/_site/.nojekyll
         shell: cmd
 
       # List deployed files to confirm .nojekyll exists
       - name: List deployed files
-        run: ls -la Documentation/_site
+        run: ls -la docs/_site
 
       - name: Upload site artifact
         uses: actions/upload-artifact@v3
         with:
           name: _site
-          path: Documentation/_site
+          path: docs/_site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
