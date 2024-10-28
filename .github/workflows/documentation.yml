@@ -50,13 +50,6 @@ jobs:
           if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
         shell: cmd
 
-      - name: Start Python Server
-        run: |
-          cd Documentation/_site
-          Start-Process python -ArgumentList "-m", "http.server", "8000" -NoNewWindow
-          Start-Sleep -Seconds 5
-        shell: powershell
-
       - name: Generate PDFs
         run: |
           cd Documentation/_site
@@ -66,7 +59,7 @@ jobs:
             --print-media-type ^
             --javascript-delay 1000 ^
             --log-level info ^
-            http://localhost:8000/api/index.html _pdf/Documentation_api.pdf || exit 0
+            file:///$(pwd)/api/index.html _pdf/Documentation_api.pdf || exit 0
 
           echo "Generating main documentation PDF..."
           "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
@@ -74,12 +67,11 @@ jobs:
             --print-media-type ^
             --javascript-delay 1000 ^
             --log-level info ^
-            http://localhost:8000/index.html _pdf/Documentation.pdf || exit 0
+            file:///$(pwd)/index.html _pdf/Documentation.pdf || exit 0
 
           echo "Listing _pdf directory..."
           dir _pdf
         shell: cmd
-
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
