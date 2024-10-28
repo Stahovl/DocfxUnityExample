@@ -21,7 +21,7 @@ jobs:
 
       - name: Install DocFX and wkhtmltopdf
         run: |
-          choco install -y docfx
+          choco install -y docfx --version=2.58.9
           choco install -y wkhtmltopdf
           refreshenv
         shell: cmd
