@@ -1,15 +1,23 @@
 name: Build and Deploy Documentation
 
-on: 
-  push: 
-    branches: 
+on:
+  push:
+    branches:
       - master
       - main
   workflow_dispatch:
 
+permissions:
+  actions: read
+  pages: write
+  id-token: write
+
 jobs:
-  build:
-    runs-on: windows-latest
+  publish-docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -17,130 +25,25 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: 8.x
 
-      - name: Install DocFX
-        run: choco install -y docfx
-
-      - name: Install wkhtmltopdf
+      - name: Install DocFX и Wkhtmltopdf
         run: |
-          choco install wkhtmltopdf --version=0.12.6 -y
-          $env:Path = "C:\Program Files (x86)\wkhtmltopdf\bin;$env:Path"
-        shell: powershell
+          dotnet tool update -g docfx
+          sudo apt-get install -y wkhtmltopdf
 
-      - name: Use README.md as index.md
-        run: copy README.md Documentation\index.md
-        shell: cmd
-
-      - name: Generate Metadata
+      - name: Generate Documentation
         run: |
-          cd Documentation
-          if exist obj rmdir /s /q obj
-          docfx metadata
-        shell: cmd
-
-      - name: Build Documentation
-        run: |
-          cd Documentation
-          docfx build
-        shell: cmd
-
-      - name: Ensure PDF directory exists
-        run: |
-          if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
-        shell: cmd
-
-      - name: Start HTTP Server
-        run: |
-          cd Documentation/_site
-          Add-Type -AssemblyName System.Web
-          $listener = New-Object System.Net.HttpListener
-          $listener.Prefixes.Add("http://*:8000/")
-          $listener.Start()
-          Write-Output "HTTP server running..."
-          while ($listener.IsListening) {
-            $context = $listener.GetContext()
-            $response = $context.Response
-            $path = "Documentation/_site" + $context.Request.Url.LocalPath
-            if (Test-Path $path) {
-              $content = Get-Content $path -Raw
-              $response.ContentType = "text/html"
-              [byte[]]$buffer = [System.Text.Encoding]::UTF8.GetBytes($content)
-              $response.OutputStream.Write($buffer, 0, $buffer.Length)
-              $response.Close()
-            }
-            else {
-              $response.StatusCode = 404
-              $response.Close()
-            }
-          }
-        shell: powershell
-
-      - name: Generate PDFs
-        run: |
-          cd Documentation/_site
-          echo "Generating API documentation PDF..."
-          "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
-            --enable-local-file-access ^
-            --print-media-type ^
-            --javascript-delay 1000 ^
-            --log-level info ^
-            http://localhost:8000/api/index.html _pdf/Documentation_api.pdf || exit 0
-
-          echo "Generating main documentation PDF..."
-          "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
-            --enable-local-file-access ^
-            --print-media-type ^
-            --javascript-delay 1000 ^
-            --log-level info ^
-            http://localhost:8000/index.html _pdf/Documentation.pdf || exit 0
-
-          echo "Listing _pdf directory..."
-          dir _pdf
-        shell: cmd
+          docfx docfx.json
 
       - name: Create .nojekyll file
-        run: type nul > Documentation/_site/.nojekyll
-        shell: cmd
+        run: echo "" > _site/.nojekyll
 
-      - name: Upload site artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: site_artifact
-          path: Documentation/_site
+          path: '_site'
 
-      - name: Upload PDF artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: documentation_pdfs
-          path: Documentation/_site/_pdf
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Download site artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: site_artifact
-          path: _site
-
-      - name: Download PDF artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: documentation_pdfs
-          path: _site/_pdf
-
-      - name: Create .nojekyll file
-        run: touch _site/.nojekyll
-
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
