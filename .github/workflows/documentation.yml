@@ -59,7 +59,7 @@ jobs:
             --print-media-type ^
             --javascript-delay 1000 ^
             --log-level info ^
-            file:///$(GITHUB_WORKSPACE)/Documentation/_site/api/index.html _pdf/Documentation_api.pdf || exit 0
+            api/index.html _pdf/Documentation_api.pdf || exit 0
 
           echo "Generating main documentation PDF..."
           "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
@@ -67,7 +67,7 @@ jobs:
             --print-media-type ^
             --javascript-delay 1000 ^
             --log-level info ^
-            file:///$(GITHUB_WORKSPACE)/Documentation/_site/index.html _pdf/Documentation.pdf || exit 0
+            index.html _pdf/Documentation.pdf || exit 0
 
           echo "Listing _pdf directory..."
           dir _pdf
