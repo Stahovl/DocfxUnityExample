@@ -19,8 +19,12 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: Install DocFX
-        run: choco install -y docfx
+      - name: Install DocFX and wkhtmltopdf
+        run: |
+          choco install -y docfx
+          choco install -y wkhtmltopdf
+          refreshenv
+        shell: cmd
 
       - name: Use README.md as index.md
         run: copy README.md Documentation\index.md
@@ -32,6 +36,7 @@ jobs:
           if exist obj rmdir /s /q obj
           docfx metadata
           docfx build
+          where wkhtmltopdf
           docfx pdf
           dir _site\_pdf
         shell: cmd
