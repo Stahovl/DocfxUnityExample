@@ -49,31 +49,10 @@
             "_appName": "DocfxUnityExample Documentation",
             "_appTitle": "Documentation",
             "_enableSearch": true,
-            "pdf": true,
-            "apiPdfUrl": "_pdf/Documentation_api.pdf"
+            "pdf": true
         },
         "sitemap": {
             "baseUrl": "https://stahovl.github.io/DocfxUnityExample/"
         }
-    },
-    "pdf": {
-        "content": [
-            {
-                "files": [
-                    "api/**/*.yml",
-                    "toc.yml",
-                    "*.md"
-                ]
-            }
-        ],
-        "resource": [
-            {
-                "files": [
-                    "resources/**/*"
-                ]
-            }
-        ],
-        "overwrite": [],
-        "dest": "_site/_pdf"
     }
 }

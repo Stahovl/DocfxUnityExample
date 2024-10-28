@@ -1,15 +1,26 @@
-name: Build and Deploy Documentation
-
 on:
   push:
     branches:
       - master
-      - main
-  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  actions: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: windows-latest
+  publish-docs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -19,59 +30,26 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: Install DocFX and wkhtmltopdf
-        run: |
-          choco install -y docfx
-          choco install -y wkhtmltopdf
-          refreshenv
-        shell: cmd
+      - run: dotnet tool update -g docfx
+      - run: docfx Documentation/docfx.json
 
       - name: Use README.md as index.md
         run: copy README.md Documentation\index.md
         shell: cmd
 
-      - name: DocFX Metadata
-        working-directory: Documentation
-        run: docfx metadata
-        continue-on-error: false
-
-      - name: Generate PDF
-        run: docfx pdf Documentation/docfx.json
-
-      
-      - name: DocFX Build
-        working-directory: Documentation
-        run: docfx build
-        continue-on-error: false
-
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
         shell: cmd
+
+      # List deployed files to confirm .nojekyll exists
+      - name: List deployed files
+        run: ls -la Documentation/_site
 
       - name: Upload site artifact
         uses: actions/upload-artifact@v3
         with:
           name: _site
           path: Documentation/_site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download site artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: _site
-          path: _site
-
-      - name: Create .nojekyll file
-        run: touch _site/.nojekyll
-
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _site
-          force_orphan: true
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
