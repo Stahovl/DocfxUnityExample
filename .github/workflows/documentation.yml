@@ -1,16 +1,15 @@
+name: Publish Documentation
+
 on:
   push:
     branches:
       - master
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   actions: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -25,31 +24,60 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # Setup Unity references
+      - name: Cache Unity Library
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '8.0.x'  # Updated to match your error log version
 
-      - run: dotnet tool update -g docfx
-      - run: docfx docs/docfx.json
+      # Install DocFX
+      - name: Install DocFX
+        run: dotnet tool update -g docfx
 
-      - name: Use README.md as index.md
-        run: copy README.md docs\index.md
-        shell: cmd
+      # Copy README as index (using bash)
+      - name: Copy README as index
+        run: cp README.md docs/index.md
+        shell: bash
 
-      - name: Create .nojekyll file
-        run: type nul > docs/_site/.nojekyll
-        shell: cmd
+      # Add Unity references to DocFX metadata
+      - name: Update DocFX config
+        run: |
+          echo '{"sdk": {"version": "8.0.0"}, "msbuild": {"properties": {"UnityVersion": "6000.0"}}}' > docs/docfx.json.unity
+          cat docs/docfx.json.unity docs/docfx.json > docs/docfx.json.tmp
+          mv docs/docfx.json.tmp docs/docfx.json
+        shell: bash
 
-      # List deployed files to confirm .nojekyll exists
+      # Build documentation
+      - name: Build Documentation
+        run: docfx docs/docfx.json
+        env:
+          DOTNET_ROOT: /usr/share/dotnet
+
+      # Create .nojekyll (using bash)
+      - name: Create .nojekyll
+        run: touch docs/_site/.nojekyll
+        shell: bash
+
       - name: List deployed files
         run: ls -la docs/_site
+        shell: bash
 
       - name: Upload site artifact
         uses: actions/upload-artifact@v3
         with:
           name: _site
           path: docs/_site
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

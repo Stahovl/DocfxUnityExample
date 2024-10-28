@@ -18,7 +18,12 @@
             ],
             "dest": "api",
             "filter": "filterConfig.yml",
-            "globalNamespaceId": "Global"
+            "globalNamespaceId": "Global",
+            "properties": {
+                "TargetFramework": "netstandard2.1"
+            },
+            "disableGitFeatures": false,
+            "disableDefaultFilter": false
         }
     ],
     "build": {
@@ -53,6 +58,9 @@
         },
         "sitemap": {
             "baseUrl": "https://stahovl.github.io/DocfxUnityExample/"
-        }
+        },
+        "xrefService": [
+            "https://xref.docs.microsoft.com/query?uid={uid}"
+        ]
     }
 }
