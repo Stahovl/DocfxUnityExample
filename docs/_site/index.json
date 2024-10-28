@@ -1,0 +1,12 @@
+{
+  "api/Global.Click.html": {
+    "href": "api/Global.Click.html",
+    "title": "Class Click | Documentation",
+    "keywords": "Class Click Main and only class for the docfx example Inheritance System.Object Click Namespace : Global Assembly : cs.temp.dll.dll Syntax public class Click : MonoBehaviour Remarks This class works in conjunction with Main.uxml file. For more information about the UI structure see UI Documentation ."
+  },
+  "api/Global.html": {
+    "href": "api/Global.html",
+    "title": "Namespace Global | Documentation",
+    "keywords": "Namespace Global Classes Click Main and only class for the docfx example"
+  }
+}
