@@ -87,13 +87,13 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: _site
-          path: Documentation/_site
+          path: _site
 
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v3
         with:
           name: documentation_pdfs
-          path: Documentation/_site/_pdf
+          path: _site/_pdf
 
   deploy:
     needs: build
