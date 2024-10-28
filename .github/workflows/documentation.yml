@@ -26,17 +26,14 @@ jobs:
         run: copy README.md Documentation\index.md
         shell: cmd
 
-      - name: Generate Metadata
+      - name: Generate Documentation
         run: |
           cd Documentation
           if exist obj rmdir /s /q obj
           docfx metadata
-        shell: cmd
-
-      - name: Build Documentation
-        run: |
-          cd Documentation
           docfx build
+          docfx pdf
+          dir _site\_pdf
         shell: cmd
 
       - name: Create .nojekyll file
@@ -49,16 +46,12 @@ jobs:
           name: _site
           path: Documentation/_site
 
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Download site artifact
         uses: actions/download-artifact@v3
         with:
@@ -73,3 +66,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: _site
+          force_orphan: true
