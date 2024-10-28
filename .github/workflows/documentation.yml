@@ -30,9 +30,19 @@ jobs:
         run: copy README.md Documentation\index.md
         shell: cmd
 
+      - name: DocFX Metadata
+        working-directory: Documentation
+        run: docfx metadata
+        continue-on-error: false
+
+      - name: Generate PDF
+        working-directory: Documentation
+        run: docfx pdf docfx.json
+        continue-on-error: false
+      
       - name: DocFX Build
         working-directory: Documentation
-        run: docfx docfx.json
+        run: docfx build
         continue-on-error: false
 
       - name: Create .nojekyll file
