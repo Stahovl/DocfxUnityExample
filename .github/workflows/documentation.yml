@@ -36,9 +36,8 @@ jobs:
         continue-on-error: false
 
       - name: Generate PDF
-        working-directory: Documentation
-        run: docfx pdf docfx.json
-        continue-on-error: false
+        run: docfx pdf docs/docfx.json
+
       
       - name: DocFX Build
         working-directory: Documentation
