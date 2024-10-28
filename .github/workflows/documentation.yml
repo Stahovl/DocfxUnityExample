@@ -50,6 +50,13 @@ jobs:
           if not exist "Documentation\_site\_pdf" mkdir Documentation\_site\_pdf
         shell: cmd
 
+      - name: Start Python Server
+        run: |
+          cd Documentation/_site
+          python -m http.server 8000 &
+          Start-Sleep -Seconds 5
+        shell: powershell
+
       - name: Generate PDFs
         run: |
           cd Documentation/_site
@@ -59,7 +66,7 @@ jobs:
             --print-media-type ^
             --javascript-delay 1000 ^
             --log-level info ^
-            api/index.html _pdf/Documentation_api.pdf || exit 0
+            http://localhost:8000/api/index.html _pdf/Documentation_api.pdf || exit 0
 
           echo "Generating main documentation PDF..."
           "C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe" ^
@@ -67,7 +74,7 @@ jobs:
             --print-media-type ^
             --javascript-delay 1000 ^
             --log-level info ^
-            index.html _pdf/Documentation.pdf || exit 0
+            http://localhost:8000/index.html _pdf/Documentation.pdf || exit 0
 
           echo "Listing _pdf directory..."
           dir _pdf
