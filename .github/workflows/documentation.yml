@@ -86,7 +86,7 @@ jobs:
       - name: Upload site artifact
         uses: actions/upload-artifact@v3
         with:
-          name: _site
+          name: site_artifact
           path: Documentation/_site
 
       - name: Upload PDF artifact
@@ -107,14 +107,14 @@ jobs:
       - name: Download site artifact
         uses: actions/download-artifact@v3
         with:
-          name: _site
-          path: Documentation/_site
+          name: site_artifact
+          path: _site
 
       - name: Download PDF artifact
         uses: actions/download-artifact@v3
         with:
           name: documentation_pdfs
-          path: Documentation/_site/_pdf
+          path: _site/_pdf
 
       - name: Create .nojekyll file
         run: touch _site/.nojekyll
