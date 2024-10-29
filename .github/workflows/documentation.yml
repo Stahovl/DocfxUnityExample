@@ -75,6 +75,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
+                     --user-style-sheet "Documentation/styles/pdf_styles.css" `
                      api_combined.html "_pdf/Documentation_api.pdf"
 
           wkhtmltopdf --enable-local-file-access `
@@ -84,6 +85,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
+                     --user-style-sheet "Documentation/styles/pdf_styles.css" `
                      http://localhost:8080/index.html "_pdf/Documentation.pdf"
           
           Stop-Process -Id $serverProcess.Id
