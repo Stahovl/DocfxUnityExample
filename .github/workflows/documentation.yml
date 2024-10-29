@@ -1,25 +1,15 @@
-name: Publish Documentation
+name: Build and Deploy Documentation
 
 on:
   push:
     branches:
       - master
-
-permissions:
-  actions: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+      - main
+  workflow_dispatch:
 
 jobs:
-  publish-docs:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+  build:
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -27,36 +17,104 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '6.0.x'
 
-      # Install DocFX
       - name: Install DocFX
-        run: dotnet tool update -g docfx
+        run: choco install -y docfx
 
-      # Copy README as index
-      - name: Copy README as index
-        run: cp README.md docs/index.md
-        shell: bash
+      - name: Install wkhtmltopdf
+        run: choco install -y wkhtmltopdf
 
-      # Build documentation
+      - name: Use README.md as index.md
+        run: copy README.md Documentation\index.md
+        shell: cmd
+
+      - name: Generate Metadata
+        run: |
+          cd Documentation
+          if exist obj rmdir /s /q obj
+          docfx metadata
+        shell: cmd
+
       - name: Build Documentation
-        run: docfx docs/docfx.json
-        env:
-          DOTNET_ROOT: /usr/share/dotnet
+        run: |
+          cd Documentation
+          docfx build
+        shell: cmd
 
-      # Create .nojekyll
-      - name: Create .nojekyll
-        run: touch docs/_site/.nojekyll
-        shell: bash
+      - name: Create PDF directory
+        run: New-Item -ItemType Directory -Force -Path Documentation\_site\_pdf
+        shell: powershell
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: Generate PDFs
+        run: |
+          cd Documentation/_site
+          $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
+          Start-Sleep -Seconds 20
+          
+          wkhtmltopdf --enable-local-file-access `
+                     --print-media-type `
+                     --javascript-delay 5000 `
+                     --no-stop-slow-scripts `
+                     --debug-javascript `
+                     --load-error-handling ignore `
+                     --load-media-error-handling ignore `
+                     http://localhost:8080/api/index.html "_pdf/Documentation_api.pdf"
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3  # Changed to upload-pages-artifact
+          wkhtmltopdf --enable-local-file-access `
+                     --print-media-type `
+                     --javascript-delay 5000 `
+                     --no-stop-slow-scripts `
+                     --debug-javascript `
+                     --load-error-handling ignore `
+                     --load-media-error-handling ignore `
+                     http://localhost:8080/index.html "_pdf/Documentation.pdf"
+          
+          Stop-Process -Id $serverProcess.Id
+        shell: powershell
+
+      - name: Create .nojekyll file
+        run: type nul > Documentation/_site/.nojekyll
+        shell: cmd
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v3
         with:
-          path: docs/_site
+          name: _site
+          path: Documentation/_site
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation_pdfs
+          path: Documentation/_site/_pdf
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download site artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: _site
+          path: _site
+
+      - name: Download PDF artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: documentation_pdfs
+          path: _site/_pdf
+
+      - name: Create .nojekyll file
+        run: touch _site/.nojekyll
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _site
