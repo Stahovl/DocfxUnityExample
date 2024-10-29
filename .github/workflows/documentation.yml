@@ -64,9 +64,12 @@ jobs:
       
       - name: Copy styles and resources to _site
         run: |
-          mkdir -p Documentation/_site/styles
-          cp Documentation/styles/* Documentation/_site/styles/
+          if (!(Test-Path -Path "Documentation/_site/styles")) {
+            New-Item -ItemType Directory -Force -Path Documentation/_site/styles
+          }
+          Copy-Item -Path Documentation/styles/* -Destination Documentation/_site/styles/ -Force
         shell: powershell
+
 
       - name: Generate PDFs
         run: |
