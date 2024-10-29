@@ -61,6 +61,13 @@ jobs:
           # Close the HTML tags
           Add-Content -Path $combinedFile -Value "</body></html>"
         shell: powershell
+      
+      - name: Copy styles and resources to _site
+        run: |
+          mkdir -p Documentation/_site/styles
+          copy Documentation/styles/* Documentation/_site/styles/
+          copy Documentation/logo.svg Documentation/_site/logo.svg
+        shell: bash
 
       - name: Generate PDFs
         run: |
@@ -75,7 +82,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     --user-style-sheet "Documentation/styles/pdf_styles.css" `
+                     --user-style-sheet "styles/pdf_styles.css" `
                      api_combined.html "_pdf/Documentation_api.pdf"
 
           wkhtmltopdf --enable-local-file-access `
@@ -85,7 +92,7 @@ jobs:
                      --debug-javascript `
                      --load-error-handling ignore `
                      --load-media-error-handling ignore `
-                     --user-style-sheet "Documentation/styles/pdf_styles.css" `
+                     --user-style-sheet "styles/pdf_styles.css" `
                      http://localhost:8080/index.html "_pdf/Documentation.pdf"
           
           Stop-Process -Id $serverProcess.Id
