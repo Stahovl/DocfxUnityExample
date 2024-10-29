@@ -38,9 +38,52 @@ jobs:
 
       - name: Generate API Index
         run: |
-          Copy-Item "Generate-ApiIndex.ps1" -Destination "Documentation/api/"
-          cd Documentation/api
-          ./Generate-ApiIndex.ps1
+          Write-Host "Current directory: $(Get-Location)"
+          
+          $indexContent = @"
+# API Documentation
+
+This documentation includes all the public types and members from the project.
+
+## Namespaces
+
+"@
+          
+          $apiPath = "Documentation\api"
+          Write-Host "Looking for HTML files in: $apiPath"
+          
+          # Get all namespace files
+          $namespaces = Get-ChildItem -Path $apiPath -Filter "*.html" | 
+              Where-Object { $_.Name -notlike "*index*" -and $_.Name -notlike "*toc*" }
+          
+          Write-Host "Found namespace files: $($namespaces.Count)"
+          
+          foreach ($namespace in $namespaces) {
+              Write-Host "Processing namespace: $($namespace.Name)"
+              $namespaceName = $namespace.BaseName
+              $indexContent += "`n### $namespaceName`n`n"
+              
+              # Get all types in namespace
+              $types = Get-ChildItem -Path $apiPath -Filter "$namespaceName.*.html"
+              foreach ($type in $types) {
+                  Write-Host "Processing type: $($type.Name)"
+                  $typeName = $type.BaseName.Replace("$namespaceName.", "")
+                  $relativeLink = $type.Name.Replace("\", "/")
+                  $indexContent += "* [$typeName]($relativeLink)`n"
+              }
+          }
+          
+          $indexPath = "Documentation\api\index.md"
+          Write-Host "Writing index.md to: $indexPath"
+          $indexContent | Out-File -FilePath $indexPath -Encoding UTF8
+          
+          if (Test-Path $indexPath) {
+              Write-Host "index.md was created successfully"
+              Get-Content $indexPath
+          } else {
+              Write-Host "Error: index.md was not created"
+              exit 1
+          }
         shell: powershell
 
       - name: Build Documentation
@@ -56,29 +99,41 @@ jobs:
       - name: Generate PDFs
         run: |
           cd Documentation/_site
+          
+          # Start DocFX server and wait for it to be ready
           $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
+          Write-Host "Started DocFX server, waiting for it to be ready..."
           Start-Sleep -Seconds 20
           
-          # Use the new index.html for API documentation
-          wkhtmltopdf --enable-local-file-access `
-                     --print-media-type `
-                     --javascript-delay 5000 `
-                     --no-stop-slow-scripts `
-                     --debug-javascript `
-                     --load-error-handling ignore `
-                     --load-media-error-handling ignore `
-                     http://localhost:8080/api/index.html "_pdf/Documentation_api.pdf"
-
-          wkhtmltopdf --enable-local-file-access `
-                     --print-media-type `
-                     --javascript-delay 5000 `
-                     --no-stop-slow-scripts `
-                     --debug-javascript `
-                     --load-error-handling ignore `
-                     --load-media-error-handling ignore `
-                     http://localhost:8080/index.html "_pdf/Documentation.pdf"
+          # Common wkhtmltopdf arguments
+          $wkhtmltopdfArgs = @(
+              "--enable-local-file-access",
+              "--print-media-type",
+              "--javascript-delay", "5000",
+              "--no-stop-slow-scripts",
+              "--debug-javascript",
+              "--load-error-handling", "ignore",
+              "--load-media-error-handling", "ignore"
+          )
           
+          # Generate API documentation PDF
+          Write-Host "Generating API documentation PDF..."
+          Start-Process -FilePath "wkhtmltopdf" -ArgumentList ($wkhtmltopdfArgs + @(
+              "http://localhost:8080/api/index.html",
+              "_pdf/Documentation_api.pdf"
+          )) -Wait -NoNewWindow
+          
+          # Generate main documentation PDF
+          Write-Host "Generating main documentation PDF..."
+          Start-Process -FilePath "wkhtmltopdf" -ArgumentList ($wkhtmltopdfArgs + @(
+              "http://localhost:8080/index.html",
+              "_pdf/Documentation.pdf"
+          )) -Wait -NoNewWindow
+          
+          # Stop DocFX server
+          Write-Host "Stopping DocFX server..."
           Stop-Process -Id $serverProcess.Id
+          Write-Host "PDF generation completed"
         shell: powershell
 
       - name: Create .nojekyll file
@@ -117,6 +172,9 @@ jobs:
         with:
           name: documentation_pdfs
           path: _site/_pdf
+
+      - name: Create .nojekyll file
+        run: touch _site/.nojekyll
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

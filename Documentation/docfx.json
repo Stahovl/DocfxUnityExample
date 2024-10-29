@@ -26,6 +26,7 @@
             {
                 "files": [
                     "api/**.yml",
+                    "api/**.md",
                     "api/index.md",
                     "toc.yml",
                     "*.md"
@@ -60,6 +61,7 @@
             {
                 "files": [
                     "api/**/*.yml",
+                    "api/**/*.md",
                     "toc.yml",
                     "*.md"
                 ]
