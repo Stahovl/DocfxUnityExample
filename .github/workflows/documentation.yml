@@ -104,6 +104,12 @@ jobs:
         with:
           name: documentation_pdfs
           path: Documentation/_site/_pdf
+          
+      - name: Move Combined API HTML to API Folder
+        run: |
+          cd Documentation/_site
+          Move-Item -Path api_combined.html -Destination api/
+        shell: powershell
 
   deploy:
     needs: build
