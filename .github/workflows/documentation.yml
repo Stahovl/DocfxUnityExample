@@ -152,7 +152,7 @@ This documentation includes all the public types and members from the project.
           name: documentation_pdfs
           path: Documentation/_site/_pdf
 
-  deploy:
+deploy:
     needs: build
     runs-on: ubuntu-latest
     permissions:
