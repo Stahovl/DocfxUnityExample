@@ -121,6 +121,8 @@ YourProject/
 │   ├── api/               # API documentation (generated, git-ignored)
 │   ├── _site/            # Generated website (git-ignored)
 │   ├── _pdf/             # Generated PDFs (git-ignored)
+|   ├── styles/           # Styles for pdf generation
+|   ├── templates         # Design template
 │   ├── docfx.json        # DocFX configuration
 │   ├── filterConfig.yml  # API filter rules
 │   ├── toc.yml          # Table of contents
