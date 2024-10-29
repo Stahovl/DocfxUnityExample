@@ -1,6 +1,6 @@
-.navbar, .search-box, .sidebar, .footer, .header, .sidenav, .btn toc-toggle collapse hide-when-search {
+.navbar, .search-box, .sidebar, .footer, .header, .sidenav, .btn.toc-toggle.collapse.hide-when-search, .search-list {
     display: none !important;
 }
-#affix, #sidetoggle, #autocollapse, #search-results{
+#affix, #sidetoggle, #autocollapse, #search-results {
     display: none !important;
 }
