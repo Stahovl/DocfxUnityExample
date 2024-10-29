@@ -24,7 +24,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Global.Click.html",
-          "hash": "WXI92QXPldvUt3Isg6Pf2Q2o4SW2vdw8lAuaw1t1VuU="
+          "hash": "V5EIHteYhTNOsjLbqsLaOsfwD0cDaAoB9NxgPF61b2k="
         }
       },
       "is_incremental": false,
@@ -82,15 +82,12 @@
       "version": ""
     },
     {
-      "log_codes": [
-        "InvalidFileLink"
-      ],
       "type": "Toc",
       "source_relative_path": "toc.yml",
       "output": {
         ".html": {
           "relative_path": "toc.html",
-          "hash": "d9rY3nUYS0YUV47i1BrPiCAlH0ovDMIYWVfcORaE8iQ="
+          "hash": "9bH/UmIjuITNhzxN7jVt9zB0kKvnBUaNDqMx5A/N344="
         }
       },
       "is_incremental": false,
