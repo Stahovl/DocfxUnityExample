@@ -1,4 +1,4 @@
-.navbar, .search-box, .sidebar, .footer, .header, .sidenav hide-when-search {
+.footer, .sidenav hide-when-search {
     display: none !important;
 }
 #affix, #sidetoggle, #autocollapse{
