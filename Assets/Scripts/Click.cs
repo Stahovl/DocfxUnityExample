@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 /// </summary>
 /// <remarks>
 /// This class works in conjunction with Main.uxml file.
-/// For more information about the UI structure see <see href="~/ui/index.md">UI Documentation</see>.
+/// For more information about the UI structure see <see href="~/manual/index.html">UI Documentation</see>.
 /// </remarks>
 public class Click : MonoBehaviour
 {
