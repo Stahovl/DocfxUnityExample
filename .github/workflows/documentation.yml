@@ -62,35 +62,34 @@ jobs:
           Add-Content -Path $combinedFile -Value "</body></html>"
         shell: powershell
 
-        # Create Documentation_api.pdf, toc.html in first page, hide css from html
       - name: Generate PDFs
         run: |
           cd Documentation/_site
           $serverProcess = Start-Process docfx -ArgumentList "serve", "." -PassThru -WindowStyle Hidden
           Start-Sleep -Seconds 20
-    
-          wkhtmltopdf --enable-local-file-access `
-                    --print-media-type `
-                    --javascript-delay 5000 `
-                    --no-stop-slow-scripts `
-                    --debug-javascript `
-                    --load-error-handling ignore `
-                    --load-media-error-handling ignore `
-                    --user-style-sheet "path/to/styles/pdf_styles.css" `
-                    http://localhost:8080/api/api_combined.html "_pdf/Documentation_api.pdf"
 
           wkhtmltopdf --enable-local-file-access `
-                    --print-media-type `
-                    --javascript-delay 5000 `
-                    --no-stop-slow-scripts `
-                    --debug-javascript `
-                    --load-error-handling ignore `
-                    --load-media-error-handling ignore `
-                    --user-style-sheet "path/to/pdf_styles.css" `
-                    http://localhost:8080/index.html "_pdf/Documentation.pdf"
+                     --print-media-type `
+                     --javascript-delay 5000 `
+                     --no-stop-slow-scripts `
+                     --debug-javascript `
+                     --load-error-handling ignore `
+                     --load-media-error-handling ignore `
+                     --user-style-sheet "path/to/pdf_styles.css" `
+                     api_combined.html "_pdf/Documentation_api.pdf"
+
+          wkhtmltopdf --enable-local-file-access `
+                     --print-media-type `
+                     --javascript-delay 5000 `
+                     --no-stop-slow-scripts `
+                     --debug-javascript `
+                     --load-error-handling ignore `
+                     --load-media-error-handling ignore `
+                     --user-style-sheet "path/to/pdf_styles.css" `
+                     http://localhost:8080/index.html "_pdf/Documentation.pdf"
+          
           Stop-Process -Id $serverProcess.Id
         shell: powershell
-
 
       - name: Create .nojekyll file
         run: type nul > Documentation/_site/.nojekyll
@@ -107,12 +106,6 @@ jobs:
         with:
           name: documentation_pdfs
           path: Documentation/_site/_pdf
-
-      - name: Move Combined API HTML to API Folder
-        run: |
-          cd Documentation/_site
-          Move-Item -Path api_combined.html -Destination api/
-        shell: powershell
 
   deploy:
     needs: build
