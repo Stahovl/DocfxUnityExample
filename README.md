@@ -161,6 +161,18 @@ Common issues and solutions:
    - Check if namespace matches filterConfig.yml settings
    - Verify script files are included in the build
 
+## PDF Generation Details in Github Pages
+
+This project’s PDF documentation generation requires a custom approach due to limitations with DocFX’s native PDF tools. Instead of using DocFX’s built-in methods, we generate the PDF manually by combining individual HTML files. This does not apply to the local pdf generation, it uses docfx pdf in build.ps1.
+
+The current workflow:
+
+Combines each HTML file from the API documentation into a single api_combined.html file.
+Uses wkhtmltopdf to convert this combined HTML file into Documentation_api.pdf and the main documentation (index.html) into Documentation.pdf.
+This workaround was implemented after attempts to use DocFX’s standard PDF generation methods failed to produce a complete document, especially for API reference pages. Despite efforts to use the DocFX server and toc.yml file, issues such as missing content and connection errors persisted.
+
+Feel free to check out our GitHub Issue for more details and discussion on this approach or suggest alternatives!
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
